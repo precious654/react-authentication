@@ -1,3 +1,4 @@
+import React from "react"
 import Parse from "parse";
 import { useNavigate } from "react-router-dom";
 
@@ -5,7 +6,19 @@ import { useNavigate } from "react-router-dom";
 function Home() {
     const navigate = useNavigate();
 
+    const [balance, setBalance] = React.useState(0);
+
     const user = Parse.User.current();
+
+    const fetchBalance = async () => {
+        const Wallet = await Parse.Object.extend("Wallet");
+        const query = new Parse.Query(Wallet);
+        query.equalTo("owner", user);
+        const wallet = await query.first();
+        setBalance(wallet.get("balance"));
+    }
+
+    fetchBalance();
 
     const logOutUser = async () => {
         try {
@@ -15,6 +28,16 @@ function Home() {
         } catch (error) {
             console.error("Error logging out user:", error);
         }
+    };
+
+    const topUp = async () => {
+        const Wallet = await Parse.Object.extend("Wallet");
+        const query = new Parse.Query(Wallet);
+        query.equalTo("owner", user);
+        const wallet = await query.first();
+        wallet.increment("balance", 10);
+        const newBalance = await wallet.save()
+        setBalance( newBalance.get("balance") );
     };
 
   return (
@@ -28,8 +51,8 @@ function Home() {
             
             <div className="balance-card">
                 <p>Total Wallet Balance</p>
-                <h1>$500,000</h1>
-                <button>Top Up</button>
+                <h1>${balance}</h1>
+                <button onClick={topUp}>Top Up</button>
             </div>
 
             <div className="features">

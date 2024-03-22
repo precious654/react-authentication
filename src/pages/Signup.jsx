@@ -21,18 +21,30 @@ function Signup() {
     }
 
     const signUpUser = async () => {
-
         try {
           const newUser = new Parse.User();
-          newUser.set('username', formData.username);
-          newUser.set('email', formData.email);
-          newUser.set('password', formData.password);
-          
+          newUser.set("username", formData.username);
+          newUser.set("email", formData.email);
+          newUser.set("password", formData.password);
           const user = await newUser.signUp();
+      
+          let Wallet = Parse.Object.extend("Wallet");
+          let wallet = new Wallet();
+      
+          let userPointer = {
+            __type: "Pointer",
+            className: "_User",
+            objectId: user.id,
+          };
+      
+          wallet.set("owner", userPointer);
+          wallet.set("balance", 100);
+          wallet.save();
+      
           console.log(`${user} have successfully signed up`);
           navigate("/login");
         } catch (error) {
-            console.log("you encountered an error signing up");
+          console.log("you encountered an error signing up");
         }
       };
 
